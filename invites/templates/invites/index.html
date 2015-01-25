@@ -1,0 +1,22 @@
+<!--
+
+{% if person_list %}
+    <ul>
+    {% for person in person_list %}
+        <li><a href="{% url 'invites:detail' person.pk %}">{{ person.Name}}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No names are available.</p>
+{% endif %}
+-->
+
+{% if party_list %}
+    <ul>
+    {% for party in party_list %}
+        <li><a href="{% url 'invites:detail' party.ID %}">{{ party.head }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p> No parties are available.</p>
+{% endif %}

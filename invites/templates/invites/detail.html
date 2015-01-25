@@ -1,0 +1,34 @@
+<html>
+<head>
+<title>RSVP Detail</title>
+<script type="text/javascript">
+<!--
+function confirmRSVP() {
+    var txt = "Please confirm that you are RSVPing for the following guests:\n";
+    var checkboxes = document.getElementsByName('member');
+    var label;
+    for (var i = 0; i < checkboxes.length; i++) {
+        if (checkboxes[i].checked) {
+            label = document.getElementById('label' + (i+1));
+            txt += "- " + label.innerHTML + "\n";
+        }
+    }
+
+    return confirm(txt);
+};
+//-->
+</script>
+</head>
+<body>
+<h1>You are RSVPing for the following guests:</h1>
+<form action="{% url 'invites:vote' party_ID %}" name="form_confirm" method="post" onsubmit="return confirmRSVP();">
+{% csrf_token %}
+{% for member in member_list %}
+    <input type='checkbox' name='member' id="member{{ forloop.counter}}" value="{{member.pk}}"
+/>
+    <label id="label{{ forloop.counter }}" for="member{{ forloop.counter }}">{{member.name}}</label><br />
+{% endfor %}
+<input type='submit' value='RSVP' />
+</form>
+</body>
+</html>

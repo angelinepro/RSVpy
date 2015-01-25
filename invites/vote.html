@@ -1,0 +1,23 @@
+<h1>Please confirm that the following guests are attending:</h1>
+<!--<form action="{% url 'invites:results' party_ID %}" method="post">-->
+{% csrf_token %}
+{% if attendee_list % }
+    <ul>
+    {% for attendee in attendee_list %}
+        <li>{{ attendee }}</li>
+    {% endfor %}
+    </ul>
+{% else}
+    <p> No guests are attending.</p>
+<input type='submit' value='Confirm' />
+<!--</form>
+{% if party_list %}
+    <ul>
+    {% for party in party_list %}
+        <li><a href="{% url 'invites:detail' party.ID %}">{{ party.head }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p> No parties are available.</p>
+{% endif %}
+<input type='submit' value='Confirm' />
