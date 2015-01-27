@@ -21,12 +21,18 @@ function confirmRSVP() {
 </head>
 <body>
 <h1>You are RSVPing for the following guests:</h1>
-<form action="{% url 'invites:vote' party_ID %}" name="form_confirm" method="post" onsubmit="return confirmRSVP();">
+<form action="{% url 'invites:vote' party.pk %}" name="form_confirm" method="post" onsubmit="return confirmRSVP();">
 {% csrf_token %}
+    <input type="hidden" name="token" value="{{party.token}}"/>
 {% for member in member_list %}
-    <input type='checkbox' name='member' id="member{{ forloop.counter}}" value="{{member.pk}}"
-/>
-    <label id="label{{ forloop.counter }}" for="member{{ forloop.counter }}">{{member.name}}</label><br />
+    {{member.name}}
+    <br/>
+    <input type="hidden" name="member{{forloop.counter}}" value="{{member.pk}}"/>
+    <input type='radio' name='value{{forloop.counter}}' value="1"
+/> Attending
+    <input type='radio' name='value{{forloop.counter}}' value="0"
+/> Not Attending
+    <br/>
 {% endfor %}
 <input type='submit' value='RSVP' />
 </form>

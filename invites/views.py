@@ -19,11 +19,11 @@ def index(request):
 
 def detail(request, party_ID):
     party = get_object_or_404(Party, pk=party_ID)
-    member_list = party.members.order_by('-name')
+    member_list = party.members.order_by('pk')
     head = party.head
     party.viewDate = timezone.now()
     party.save()
-    context = {'member_list': member_list, 'head': head, 'party_ID': party_ID}
+    context = {'member_list': member_list, 'head': head, 'party': party}
     return render(request, 'invites/detail.html', context)
 
  #   context = {'member_list': member_list}
@@ -51,11 +51,18 @@ def results(request, party_ID):
 
 def vote(request, party_ID):
     party = get_object_or_404(Party, pk=party_ID)
-    attendees = request.POST.getlist('member')
-    for attendee in attendees:
-        person_instance = get_object_or_404(Person, pk=attendee)
-        person_instance.coming = True
-        person_instance.save()    
+    i = 1
+    pk_list = []
+    value_list = []
+    while 'member'+str(i) in request.POST:
+        pk_list_instance = request.POST['member'+str(i)]
+        value_list_instance = request.POST['value'+str(i)]
+        pk_list.append(pk_list_instance)
+        value_list.append(value_list_instance)
+        person_instance = get_object_or_404(Person, pk=pk_list_instance)
+        person_instance.coming = value_list_instance=='1'
+        person_instance.save()
+        i += 1
     party.submitDate = timezone.now()
     party.save()
     return render(request, 'invites/vote.html')
