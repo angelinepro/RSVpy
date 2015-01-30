@@ -21,7 +21,7 @@ function confirmRSVP() {
 </head>
 <body>
 <h1>You are RSVPing for the following guests:</h1>
-<form action="{% url 'invites:vote' party.pk %}" name="form_confirm" method="post" onsubmit="return confirmRSVP();">
+<form action="{% url 'invites:vote' party.pk party.token %}" name="form_confirm" method="post" onsubmit="return confirmRSVP();">
 {% csrf_token %}
     <input type="hidden" name="token" value="{{party.token}}"/>
 {% for member in member_list %}

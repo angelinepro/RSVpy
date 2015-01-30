@@ -1,6 +1,6 @@
-import datetime
-
 from django.db import models
+import random
+import string
 
 class Person(models.Model):
     def __str__(self):
@@ -10,7 +10,10 @@ class Person(models.Model):
     class Meta:
         verbose_name_plural = 'People'
     name = models.CharField(max_length = 50)
-    coming = models.BooleanField(default=False)
+    coming = models.NullBooleanField(default=None)
+
+def tokengenerator():
+    return ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(7))
 
 class Party(models.Model):
     def __str__(self):
@@ -21,8 +24,8 @@ class Party(models.Model):
     head = models.ForeignKey(Person, related_name = '+')
     members = models.ManyToManyField(Person)
     email = models.CharField(max_length=200)
-    viewDate = models.DateTimeField(null = True, blank=True)
-    submitDate = models.DateTimeField(null = True, blank=True)
-    address = models.CharField(max_length=500)
-    token = models.CharField(max_length=10)
-
+    emailInvite = models.BooleanField(default=True)
+    viewDate = models.DateTimeField(null = True, blank=True, default=None)
+    submitDate = models.DateTimeField(null = True, blank=True, default=None)
+    address = models.TextField(default=None)
+    token = models.CharField(max_length = 7, default=tokengenerator, blank=True, unique=True)

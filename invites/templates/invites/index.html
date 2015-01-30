@@ -14,7 +14,7 @@
 {% if party_list %}
     <ul>
     {% for party in party_list %}
-        <li><a href="{% url 'invites:detail' party.ID %}">{{ party.head }}</a></li>
+        <li><a href="{% url 'invites:detail' party.ID party.token %}">{{ party.head }}</a></li>
     {% endfor %}
     </ul>
 {% else %}

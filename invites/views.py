@@ -1,24 +1,20 @@
-from django.shortcuts import render
 from django.http import HttpResponse
-from django.http import Http404
-
+from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render
 from invites.models import Person
 from invites.models import Party
 from django.utils import timezone
+
 
 def index(request):
     party_list = Party.objects.order_by('-Head')[:5]
     context = {'party_list': party_list}
     return render(request, 'invites/index.html', context)
 
-#def index(request):
-#    person_list = Person.objects.order_by('-Coming')[:5]
-#    context = {'person_list': person_list}
-#    return render(request, 'invites/index.html', context)
-
-def detail(request, party_ID):
+def detail(request, party_ID, token):
     party = get_object_or_404(Party, pk=party_ID)
+    if party.token != token:
+        return HttpResponseForbidden('Invalid URL')
     member_list = party.members.order_by('pk')
     head = party.head
     party.viewDate = timezone.now()
@@ -26,31 +22,35 @@ def detail(request, party_ID):
     context = {'member_list': member_list, 'head': head, 'party': party}
     return render(request, 'invites/detail.html', context)
 
- #   context = {'member_list': member_list}
- #   return render(request, 'invites/detail.html', context)
- #   party = get_object_or_404(Party, title='ID')
-
-#    response = 'Here is the head of the Party: %s.'
-#    return HttpResponse(response % party.Head)
-
-
-#def detail(request, Name):
-#    person = get_object_or_404(Person, pk=Name)
-#    return render(request, 'invites/detail.html', {'person': person})
-
-#    try:
-#        person = Person.objects.get(pk=Name)
-#    except Person.DoesNotExist:
-#        raise Http404
-#    return render(request, "invites/detail.html", {'person': person})
-
-def results(request, party_ID):
+def results(request, party_ID, token):
     party = get_object_or_404(Party, pk=party_ID)
+    if party.token != token:
+        return HttpResponseForbidden('Invalid URL')
     response = "You're looking at the results of %s."
     return HttpResponse(response % party.head)
 
-def vote(request, party_ID):
+def vote(request, party_ID, token):
     party = get_object_or_404(Party, pk=party_ID)
+    if party.token != token:
+        return HttpResponseForbidden('Invalid URL')
+    member_list = party.members.order_by('pk')
+    party_pk_list = []
+    for member in member_list:
+        member_pk = member.pk
+        party_pk_list.append(member_pk)
+    i = 1
+    while 'member'+str(i) in request.POST:
+        if 'value'+str(i) in request.POST:
+            i += 1
+        else:
+            return HttpResponse('Invalid Request, Please Select Attending or Not Attending for Each Person')
+    i = 1
+    while 'member'+str(i) in request.POST:
+        pk_list_instance = int(request.POST['member'+str(i)])
+        if pk_list_instance in party_pk_list:
+            i += 1
+        else:
+           return HttpResponse('Invalid Request, You Can Only Reserve For One Party At a Time')
     i = 1
     pk_list = []
     value_list = []
