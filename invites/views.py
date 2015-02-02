@@ -1,9 +1,15 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render
-from invites.models import Person
+from invites.models import Person, SeenBrowser
 from invites.models import Party
 from django.utils import timezone
+from django.contrib import messages
+
+import user_agents
+
+
+BAD_TOKEN_TXT = 'Invalid token. Please make sure you have typed the URL correctly into your browser.'
 
 
 def index(request):
@@ -11,58 +17,94 @@ def index(request):
     context = {'party_list': party_list}
     return render(request, 'invites/index.html', context)
 
-def detail(request, party_ID, token):
-    party = get_object_or_404(Party, pk=party_ID)
+
+def detail(request, token):
+    party = get_object_or_404(Party, token=token)
     if party.token != token:
-        return HttpResponseForbidden('Invalid URL')
-    member_list = party.members.order_by('pk')
+        return HttpResponseForbidden(BAD_TOKEN_TXT)
+
+    def template_format(coming):
+        if coming:
+            return '1'
+        elif coming is None:
+            return ''
+        else:
+            return '0'
+
+    member_list = ((member, template_format(member.coming)) for member in party.members.order_by('pk'))
     head = party.head
+
+    # We can be sure that the invite has been looked at
     party.viewDate = timezone.now()
     party.save()
-    context = {'member_list': member_list, 'head': head, 'party': party}
+
+    # Save the user's browser for metrics
+    ua = request.META.get('HTTP_USER_AGENT', None)
+    if ua:
+        save_browser(ua)
+
+    # If the RSVP has been viewed already, populate the current values.
+    rsvps = {}
+    if party.submitDate:
+        messages.add_message(request, messages.INFO,
+                             "You've already RSVPed. You can still change your "
+                             "RSVP below and submit it again until RSVPs close.")
+        for member in party.members.all():
+            rsvps[member.pk] = member.coming
+
+    context = {'member_list': member_list, 'head': head, 'party': party, 'rsvps': rsvps}
     return render(request, 'invites/detail.html', context)
 
-def results(request, party_ID, token):
-    party = get_object_or_404(Party, pk=party_ID)
+
+def results(request, token):
+    party = get_object_or_404(Party, token=token)
     if party.token != token:
         return HttpResponseForbidden('Invalid URL')
     response = "You're looking at the results of %s."
     return HttpResponse(response % party.head)
 
-def vote(request, party_ID, token):
-    party = get_object_or_404(Party, pk=party_ID)
+
+def rsvp(request, token):
+    party = get_object_or_404(Party, token=token)
     if party.token != token:
-        return HttpResponseForbidden('Invalid URL')
-    member_list = party.members.order_by('pk')
-    party_pk_list = []
-    for member in member_list:
-        member_pk = member.pk
-        party_pk_list.append(member_pk)
+        return HttpResponseForbidden('Invalid token.')
+
     i = 1
-    while 'member'+str(i) in request.POST:
-        if 'value'+str(i) in request.POST:
+    data = {}
+    while True:
+        member_key = 'member%d' % i
+        value_key = 'value%d' % i
+        member_exists = member_key in request.POST
+        value_exists = value_key in request.POST
+        if all((member_exists, value_exists)):
+            value = request.POST[value_key]
+            if value == '':
+                # Unanswered field
+                messages.add_message(request, messages.ERROR, 'Please respond for all members of your party.')
+                return detail(request, token)
+            data[request.POST[member_key]] = request.POST[value_key] == '1'
             i += 1
+        elif any((member_exists, value_exists)):
+            return HttpResponseBadRequest('Unpaired values')
         else:
-            return HttpResponse('Invalid Request, Please Select Attending or Not Attending for Each Person')
-    i = 1
-    while 'member'+str(i) in request.POST:
-        pk_list_instance = int(request.POST['member'+str(i)])
-        if pk_list_instance in party_pk_list:
-            i += 1
-        else:
-           return HttpResponse('Invalid Request, You Can Only Reserve For One Party At a Time')
-    i = 1
-    pk_list = []
-    value_list = []
-    while 'member'+str(i) in request.POST:
-        pk_list_instance = request.POST['member'+str(i)]
-        value_list_instance = request.POST['value'+str(i)]
-        pk_list.append(pk_list_instance)
-        value_list.append(value_list_instance)
-        person_instance = get_object_or_404(Person, pk=pk_list_instance)
-        person_instance.coming = value_list_instance=='1'
+            break
+
+    for pk, coming in data.items():
+        person_instance = get_object_or_404(Person, pk=pk)
+        person_instance.coming = coming
         person_instance.save()
-        i += 1
+
     party.submitDate = timezone.now()
     party.save()
-    return render(request, 'invites/vote.html')
+
+    return render(request, 'invites/rsvp.html')
+
+
+def save_browser(browser):
+    parsed = user_agents.parse(browser)
+    obj, _ = SeenBrowser.objects.get_or_create(defaults={
+        'browser': parsed.browser.family,
+        'version': parsed.browser.version_string
+    })
+    obj.times += 1
+    obj.save()

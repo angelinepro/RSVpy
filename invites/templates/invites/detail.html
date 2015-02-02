@@ -1,40 +1,146 @@
-<html>
-<head>
-<title>RSVP Detail</title>
-<script type="text/javascript">
-<!--
-function confirmRSVP() {
-    var txt = "Please confirm that you are RSVPing for the following guests:\n";
-    var checkboxes = document.getElementsByName('member');
-    var label;
-    for (var i = 0; i < checkboxes.length; i++) {
-        if (checkboxes[i].checked) {
-            label = document.getElementById('label' + (i+1));
-            txt += "- " + label.innerHTML + "\n";
-        }
-    }
+{% load staticfiles %}
 
-    return confirm(txt);
-};
-//-->
-</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>You're Invited! - Josh and Angeline's Wedding</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="{% static 'css/invites.css' %}" rel="stylesheet">
+
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    <!-- <script src="./Narrow Jumbotron Template for Bootstrap_files/ie-emulation-modes-warning.js"></script><style type="text/css"></style> -->
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="{% static 'js/jquery-1.11.2.min.js' %}" language="javascript"></script>
+    <script language="javascript">
+        function setButtonRow(i) {
+            attending = $('#attending' + i);
+            notattending = $('#notattending' + i);
+
+            if ($('#value' + i).val() === '1') {
+                attending.addClass('btn-success');
+                notattending.removeClass('btn-danger');
+            } else {
+                attending.removeClass('btn-success');
+                notattending.addClass('btn-danger');
+            }
+        };
+
+        $(document).ready(function() {
+            $('.btn-attend').click(function(e) {
+                var valueField = $('#value' + this.value);
+                if (this.id.lastIndexOf('attending') === 0) {
+                    valueField.val('1');
+                } else {
+                    valueField.val('0');
+                }
+                setButtonRow(this.value);
+            });
+
+            $('.btn-attend').each(function(i, obj) {
+                setButtonRow(this.value);
+            })
+        });
+    </script>
 </head>
+
 <body>
-<h1>You are RSVPing for the following guests:</h1>
-<form action="{% url 'invites:vote' party.pk party.token %}" name="form_confirm" method="post" onsubmit="return confirmRSVP();">
-{% csrf_token %}
-    <input type="hidden" name="token" value="{{party.token}}"/>
-{% for member in member_list %}
-    {{member.name}}
-    <br/>
-    <input type="hidden" name="member{{forloop.counter}}" value="{{member.pk}}"/>
-    <input type='radio' name='value{{forloop.counter}}' value="1"
-/> Attending
-    <input type='radio' name='value{{forloop.counter}}' value="0"
-/> Not Attending
-    <br/>
-{% endfor %}
-<input type='submit' value='RSVP' />
-</form>
+
+<div class="container">
+    <div class="header">
+        <nav>
+            <ul class="nav nav-pills invite-pill pull-right">
+                <li role="presentation">
+                    <a href="{% static 'invites/index.html' %}">Home</a>
+                </li>
+                <li role="presentation" class="active">
+                    <a href="#">RSVP</a></li>
+                <li role="presentation">
+                    <a href="{% static 'invites/contact.html' %}">Contact</a>
+                </li>
+            </ul>
+        </nav>
+        <h3>&nbsp;</h3>
+    </div>
+
+    <div class="jumbotron">
+        <img src="{% static 'img/invited.jpg' %}" class="jumbotron-img" />
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12 col-xs-12">
+            <h3>We'd love to have you at our wedding!</h3>
+            <p>
+                Please let us know who is coming from your party by
+                clicking the <b>Attending</b> or <b>Not Attending</b> boxes. Make sure to click this for
+                every member of the party. Thank you very much, and we hope to see you there.
+            </p>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="row">
+                <div class="alert col-sm-12 col-xs-12
+                {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                    alert-danger
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                    alert-success
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                    alert-warning
+                {% endif %}
+                ">{{ message }}</div>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form action="{% url 'invites:rsvp' party.token %}" name="form_confirm" method="post">
+        {% csrf_token %}
+        {% for member, value in member_list %}
+            <input type="hidden" name="member{{forloop.counter}}" value="{{member.pk}}" />
+            <input type="hidden" id="value{{ forloop.counter }}" name="value{{forloop.counter}}" value="{{ value }}" />
+
+            <div class="row row-buffer">
+                <div class="name-col col-sm-4 col-xs-4">
+                    {{ member.name }}
+                </div>
+                <div class="name-col col-sm-4 col-xs-4 small-horiz-pad">
+                    <button type="button" class="btn btn-default btn-attend"
+                            id="attending{{ forloop.counter }}" value="{{ forloop.counter }}">
+                        Attending
+                    </button>
+                </div>
+                <div class="name-col col-sm-4 col-xs-4 small-horiz-pad">
+                    <button type="button" class="btn btn-default btn-attend"
+                            id="notattending{{ forloop.counter }}" value="{{ forloop.counter }}">
+                        Not Attending
+                    </button>
+                </div>
+            </div>
+        {% endfor %}
+
+        <div class="row row-buffer text-center">
+            <button type="submit" class="btn btn-default btn-submit">RSVP</button>
+        </div>
+    </form>
+</div> <!-- /container -->
+<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+<!-- <script src="ie10-viewport-bug-workaround.js"></script> -->
 </body>
 </html>

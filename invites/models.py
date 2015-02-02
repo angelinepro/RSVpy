@@ -1,31 +1,53 @@
 from django.db import models
-import random
-import string
+from random import SystemRandom
+
+
+TOKEN_CHARSET = '3479ACEFHJKLMNPRTUVWXYabcdefghijkmnopqrstuvwxyz'
 
 class Person(models.Model):
-    def __str__(self):
-        strpk = str(self.pk)
-        namepk = self.name+strpk
-        return namepk
-    class Meta:
-        verbose_name_plural = 'People'
-    name = models.CharField(max_length = 50)
+    name = models.CharField(max_length=50)
     coming = models.NullBooleanField(default=None)
 
-def tokengenerator():
-    return ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(7))
+    class Meta:
+        verbose_name_plural = 'People'
+
+    def __str__(self):
+        return '%s (person_id=%d, coming=%s)' % (self.name, self.pk, self.coming)
+
 
 class Party(models.Model):
-    def __str__(self):
-        return str(self.head)
-    class Meta:
-        verbose_name_plural = 'Parties'
     ID = models.AutoField(primary_key=True)
-    head = models.ForeignKey(Person, related_name = '+')
+    head = models.ForeignKey(Person, related_name='+')
     members = models.ManyToManyField(Person)
     email = models.CharField(max_length=200)
     emailInvite = models.BooleanField(default=True)
-    viewDate = models.DateTimeField(null = True, blank=True, default=None)
-    submitDate = models.DateTimeField(null = True, blank=True, default=None)
+    viewDate = models.DateTimeField(null=True, blank=True, default=None)
+    submitDate = models.DateTimeField(null=True, blank=True, default=None)
     address = models.TextField(default=None)
-    token = models.CharField(max_length = 7, default=tokengenerator, blank=True, unique=True)
+    token = models.CharField(max_length=7, blank=True, unique=True, db_index=True)
+
+    class Meta:
+        verbose_name_plural = 'Parties'
+
+    def __str__(self):
+        return '%s (party_id=%d)' % (self.head, self.pk)
+
+    def save(self, *args, **kwargs):
+        if not self.token:
+            self.token = self.random_unique_token()
+        super(Party, self).save(*args, **kwargs)
+
+    @classmethod
+    def random_unique_token(cls):
+        # XXX: Hope it doesn't take too long!!
+        while True:
+            token = ''.join(SystemRandom().choice(TOKEN_CHARSET) for _ in range(7))
+            if not len(cls.objects.filter(token=token)):
+                return token
+
+
+class SeenBrowser(models.Model):
+    id = models.AutoField(primary_key=True)
+    browser = models.CharField(max_length=255)
+    version = models.CharField(max_length=64)
+    times = models.PositiveIntegerField(default=0)
