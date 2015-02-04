@@ -30,13 +30,14 @@
     <script src="{% static 'js/jquery-1.11.2.min.js' %}" language="javascript"></script>
     <script language="javascript">
         function setButtonRow(i) {
+            var value = $('#value' + i).val();
             attending = $('#attending' + i);
             notattending = $('#notattending' + i);
 
-            if ($('#value' + i).val() === '1') {
+            if (value === '1') {
                 attending.addClass('btn-success');
                 notattending.removeClass('btn-danger');
-            } else {
+            } else if (value === '0') {
                 attending.removeClass('btn-success');
                 notattending.addClass('btn-danger');
             }
@@ -100,7 +101,7 @@
                 <div class="alert col-sm-12 col-xs-12
                 {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
                     alert-danger
-                {% elif message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.INFO or message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
                     alert-success
                 {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
                     alert-warning

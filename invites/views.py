@@ -12,13 +12,14 @@ import user_agents
 BAD_TOKEN_TXT = 'Invalid token. Please make sure you have typed the URL correctly into your browser.'
 
 
-def index(request):
-    party_list = Party.objects.order_by('-Head')[:5]
-    context = {'party_list': party_list}
-    return render(request, 'invites/index.html', context)
+def rsvp(request, token):
+    if request.method == 'POST':
+        return rsvp_post(request, token)
+    else:
+        return rsvp_get(request, token)
 
 
-def detail(request, token):
+def rsvp_get(request, token, redirected_from_post=False):
     party = get_object_or_404(Party, token=token)
     if party.token != token:
         return HttpResponseForbidden(BAD_TOKEN_TXT)
@@ -45,7 +46,7 @@ def detail(request, token):
 
     # If the RSVP has been viewed already, populate the current values.
     rsvps = {}
-    if party.submitDate:
+    if party.submitDate and not redirected_from_post:
         messages.add_message(request, messages.INFO,
                              "You've already RSVPed. You can still change your "
                              "RSVP below and submit it again until RSVPs close.")
@@ -56,15 +57,7 @@ def detail(request, token):
     return render(request, 'invites/detail.html', context)
 
 
-def results(request, token):
-    party = get_object_or_404(Party, token=token)
-    if party.token != token:
-        return HttpResponseForbidden('Invalid URL')
-    response = "You're looking at the results of %s."
-    return HttpResponse(response % party.head)
-
-
-def rsvp(request, token):
+def rsvp_post(request, token):
     party = get_object_or_404(Party, token=token)
     if party.token != token:
         return HttpResponseForbidden('Invalid token.')
@@ -81,7 +74,7 @@ def rsvp(request, token):
             if value == '':
                 # Unanswered field
                 messages.add_message(request, messages.ERROR, 'Please respond for all members of your party.')
-                return detail(request, token)
+                return rsvp_get(request, token, redirected_from_post=True)
             data[request.POST[member_key]] = request.POST[value_key] == '1'
             i += 1
         elif any((member_exists, value_exists)):
@@ -97,7 +90,8 @@ def rsvp(request, token):
     party.submitDate = timezone.now()
     party.save()
 
-    return render(request, 'invites/rsvp.html')
+    messages.add_message(request, messages.SUCCESS, 'Thank you for your response!')
+    return rsvp_get(request, token, redirected_from_post=True)
 
 
 def save_browser(browser):
