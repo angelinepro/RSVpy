@@ -58,7 +58,7 @@ class Command(BaseCommand):
     @staticmethod
     def make_email(recipient, html, text):
         msg = MIMEMultipart('alternative')
-        msg['Subject'] = "You're invited to Josh and Angeline's Wedding!"
+        msg['Subject'] = "You are cordially invited to %s" % settings.EVENT_NAME
         msg['From'] = settings.SMTP_FROM
         msg['To'] = recipient
 
