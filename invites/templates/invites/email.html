@@ -27,7 +27,7 @@
                 <tr>
                     <th valign="top"  align="right">Where:</th>
                     <td>
-                        {{ settings.EVENT_LOCATION_HTML }}<br/>
+                        {{ settings.EVENT_LOCATION_HTML|safe }}<br/>
                         (<a href="{{ settings.EVENT_LOCATION_MAP }}">map</a>)
                     </td>
                 </tr>
@@ -38,7 +38,7 @@
             </table>
 
             <p align="center">
-                {{ settings.RSVP_HTML }}
+                {{ settings.RSVP_HTML|safe }}
             </p>
 
             <h1 align="center"><a href="{{ settings.BASE_URL }}{% url 'invites:rsvp' party.token %}">RSVP Now!</a></h1>
