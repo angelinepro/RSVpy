@@ -1,0 +1,50 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html lang="en">
+<body>
+
+<table width="100%" bgcolor="#ffdfae">
+    <tr>
+        <td>
+            <table width="100%" bgcolor="#8A0F23" cellpadding="20">
+                <tr>
+                    <td>
+                        <img alt="You're invited to {{ settings.EVENT_NAME }} on {{ settings.EVENT_DATE_TIME }} in {{ settings.EVENT_LOCATION_SHORT }}"
+                             src="{{ settings.BASE_URL }}{% static 'img/invited.jpg' %}" class="jumbotron-img" style="width: 100%" />
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td style="font-size: large" valign="center">
+            <table align="center" cellpadding="10">
+                <tr>
+                    <th valign="top" align="right">To:</th>
+                    <td>{{ party.members.all|join:"<br/>" }}</td>
+                </tr>
+                <tr>
+                    <th valign="top"  align="right">Where:</th>
+                    <td>
+                        {{ settings.EVENT_LOCATION_HTML }}<br/>
+                        (<a href="{{ settings.EVENT_LOCATION_MAP }}">map</a>)
+                    </td>
+                </tr>
+                <tr>
+                    <th valign="top"  align="right">When:</th>
+                    <td>{{ settings.EVENT_DATE_TIME }}</td>
+                </tr>
+            </table>
+
+            <p align="center">
+                {{ settings.RSVP_HTML }}
+            </p>
+
+            <h1 align="center"><a href="{{ settings.BASE_URL }}{% url 'invites:rsvp' party.token %}">RSVP Now!</a></h1>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>

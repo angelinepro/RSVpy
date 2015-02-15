@@ -1,0 +1,14 @@
+To: {{ party.members.all|join:", " }}
+
+** You're Invited to {{ settings.EVENT_NAME }} **
+
+Where:
+
+{{ settings.EVENT_LOCATION_HTML|striptags }}
+( Map: {{ settings.EVENT_LOCATION_MAP }} )
+
+When: {{ settings.EVENT_DATE_TIME }}
+
+{{ settings.RSVP_HTML|striptags }}
+
+** To RSVP, please click this link: {{ settings.BASE_URL }}{% url 'invites:rsvp' party.token %} **

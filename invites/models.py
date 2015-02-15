@@ -12,7 +12,7 @@ class Person(models.Model):
         verbose_name_plural = 'People'
 
     def __str__(self):
-        return '%s (person_id=%d, coming=%s)' % (self.name, self.pk, self.coming)
+        return self.name
 
 
 class Party(models.Model):
@@ -21,6 +21,7 @@ class Party(models.Model):
     members = models.ManyToManyField(Person)
     email = models.CharField(max_length=200)
     emailInvite = models.BooleanField(default=True)
+    emailSent = models.BooleanField(default=False)
     viewDate = models.DateTimeField(null=True, blank=True, default=None)
     submitDate = models.DateTimeField(null=True, blank=True, default=None)
     address = models.TextField(default=None)
