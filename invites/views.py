@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404, render
 from invites.models import Person, SeenBrowser
 from invites.models import Party
 from django.utils import timezone
+from django.conf import settings
 from django.contrib import messages
 
 import user_agents
@@ -53,7 +54,13 @@ def rsvp_get(request, token, redirected_from_post=False):
         for member in party.members.all():
             rsvps[member.pk] = member.coming
 
-    context = {'member_list': member_list, 'head': head, 'party': party, 'rsvps': rsvps}
+    context = {
+        'member_list': member_list,
+        'head': head,
+        'party': party,
+        'rsvps': rsvps,
+        'settings': settings,
+    }
     return render(request, 'invites/detail.html', context)
 
 
