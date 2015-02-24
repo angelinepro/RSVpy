@@ -12,7 +12,7 @@ from invites.models import Party
 
 
 class Command(BaseCommand):
-    args = '[unsent|unseen|all] [template-name] [text-template-name]'
+    args = '[unsent|unseen|unanswered|all|party:N]'
     help = """
         Email invites to recipients who have not yet been sent an email or have
         not seen the invite yet, or to a specific party unconditionally.
@@ -21,7 +21,7 @@ class Command(BaseCommand):
     VALID_KINDS = ('unsent', 'unseen', 'unanswered', 'all')
 
     def handle(self, *args, **options):
-        kind, template, text_template = args
+        kind = args[0]
 
         if kind.startswith('party:'):
             results = Party.objects.filter(pk=int(kind[6:]))
@@ -42,8 +42,8 @@ class Command(BaseCommand):
             print 'Sending email to: %s (%s)' % (party.head.name, party.email)
             email = self.make_email(
                 party.email,
-                self.render(party, template),
-                self.render(party, text_template))
+                self.render(party, settings.EMAIL_TEMPLATE_HTML),
+                self.render(party, settings.EMAIL_TEMPLATE_TEXT))
             self.send_email(email, party.email)
             party.emailSent = True
             party.save()

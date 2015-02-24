@@ -87,6 +87,9 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
 
+EMAIL_TEMPLATE_HTML = 'invites/email.html'
+EMAIL_TEMPLATE_TEXT = 'invites/email.txt'
+
 try:
     from local_settings import *
 except ImportError:

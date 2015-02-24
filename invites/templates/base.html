@@ -1,0 +1,48 @@
+{% load staticfiles %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>{% block title %}Untitled{% endblock %} - {{ settings.EVENT_NAME }}</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="{% static 'css/invites.css' %}" rel="stylesheet">
+
+    {% block extra_css %}{% endblock %}
+    {% block extra_js %}{% endblock %}
+</head>
+
+<body>
+
+<div class="container">
+    <div class="header">
+        <nav>
+            <ul class="nav nav-pills invite-pill pull-right">
+                <li role="presentation">
+                    <a href="/">Home</a>
+                </li>
+                <li role="presentation">
+                    <a href="/contact/">Contact</a>
+                </li>
+            </ul>
+        </nav>
+        <h3>&nbsp;</h3>
+    </div>
+
+    <div class="jumbotron">
+        {% block jumbotron %}{% endblock %}
+    </div>
+
+    {% block body %}{% endblock %}
+</div> <!-- /container -->
+</body>
+</html>
