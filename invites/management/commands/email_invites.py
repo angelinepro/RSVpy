@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import smtplib
+import time
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -9,6 +10,8 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.template import loader, Context
 from invites.models import Party
+
+DELAY = 30  # seconds
 
 
 class Command(BaseCommand):
@@ -23,22 +26,21 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         kind = args[0]
 
+        query = {'emailInvite': True}
         if kind.startswith('party:'):
-            results = Party.objects.filter(pk=int(kind[6:]))
+            query['pk'] = int(kind[6:])
         elif kind == 'unsent':
-            results = Party.objects.filter(emailSent=False)
+            query['emailSent'] = False
         elif kind == 'unseen':
-            results = Party.objects.filter(viewDate=None)
+            query['viewDate'] = None
         elif kind == 'unanswered':
-            results = Party.objects.filter(submitDate=None)
-        elif kind == 'all':
-            results = Party.objects.all()
-        else:
+            query['submitDate'] = None
+        elif kind != 'all':
             raise CommandError(
                 'First argument must be "party:NN" or one of: %s' %
                 ', '.join(self.VALID_KINDS))
 
-        for party in results:
+        for party in Party.objects.filter(**query):
             print 'Sending email to: %s (%s)' % (party.head.name, party.email)
             email = self.make_email(
                 party.email,
@@ -47,6 +49,7 @@ class Command(BaseCommand):
             self.send_email(email, party.email)
             party.emailSent = True
             party.save()
+            time.sleep(DELAY)
 
     @staticmethod
     def render(party, template):
