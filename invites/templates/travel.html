@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block title %}Travel{% endblock %}
+
+{% block jumbotron %}
+<img src="{% static 'img/invited.jpg' %}" class="jumbotron-img" />
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-sm-12 col-xs-12">
+            <h3>Getting to Berkeley</h3>
+            <p>
+                The Bay Area's three major airports, San Francisco (SFO),
+                Oakland (OAK), and San Jose (SJC), are all within driving
+                distance of Berkeley. Most international flights arrive at SFO.
+                We recommend OAK and SFO for their proximity to Berkeley.
+            </p>
+            <h3>Getting to the Brazilian Room</h3>
+            <p>
+                The Brazilian Room is located in the hills of Berkeley inside
+                Tilden Regional Park. While it is technically reachable by
+                public transportation, we advise guests to carpool to reach
+                the venue. Directions from common locations are available on
+                the <a href="http://www.ebparks.org/Page28.aspx#directions">
+                East Bay Regional Parks</a> website, but when in doubt, use
+                Google Maps.
+            </p>
+        </div>
+    </div>
+{% endblock %}

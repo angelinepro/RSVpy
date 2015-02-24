@@ -10,10 +10,20 @@
 {% block body %}
     <div class="row">
         <div class="col-sm-12 col-xs-12">
-            <h3>Home</h3>
+            <h3>{{ settings.EVENT_NAME }}</h3>
             <p>
-                blah blah
+                Welcome to our wedding website! Use the navigation bar to read
+                up on details about how to get to our wedding, and don't forget
+                to check back frequently for updates. Information will be added
+                to the website as it becomes ready.
             </p>
+
+            <h3>Date and Time</h3>
+            {{ settings.EVENT_DATE_TIME|safe }}
+
+            <h3>Location</h3>
+            {{ settings.EVENT_LOCATION_HTML|safe }}<br/>
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d50384.829333615075!2d-122.26995193759312!3d37.88247049494861!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x80857be6aaaaaaab%3A0xe8de096c7d88ad61!2sBrazilian+Room!5e0!3m2!1sen!2sus!4v1424745436052" width="600" height="450" frameborder="0" style="border:0"></iframe>
         </div>
     </div>
 {% endblock %}
