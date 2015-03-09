@@ -1,6 +1,7 @@
 from django.http import HttpResponse, HttpResponseBadRequest
+from django.templatetags.static import static
 from django.http import HttpResponseForbidden
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from invites.models import Person, SeenBrowser
 from invites.models import Party
 from django.utils import timezone
@@ -109,3 +110,10 @@ def save_browser(browser):
     })
     obj.times += 1
     obj.save()
+
+
+def tracking(request, token):
+    party = get_object_or_404(Party, token=token)
+    party.emailViewDate = timezone.now()
+    party.save()
+    return redirect(static('img/1x1.gif'))

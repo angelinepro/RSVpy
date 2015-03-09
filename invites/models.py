@@ -23,6 +23,7 @@ class Party(models.Model):
     emailInvite = models.BooleanField(default=True)
     emailSent = models.BooleanField(default=False)
     viewDate = models.DateTimeField(null=True, blank=True, default=None)
+    emailViewDate = models.DateTimeField(null=True, blank=True, default=None)
     submitDate = models.DateTimeField(null=True, blank=True, default=None)
     address = models.TextField(default=None)
     token = models.CharField(max_length=7, blank=True, unique=True, db_index=True)

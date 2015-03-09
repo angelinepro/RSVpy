@@ -6,4 +6,5 @@ from invites.models import TOKEN_CHARSET
 urlpatterns = patterns('',
     # ex: /r/ABCD123/
     url(r'^(?P<token>[%s]+)$' % TOKEN_CHARSET, views.rsvp, name='rsvp'),
+    url(r'^tracking/(?P<token>[%s]+)$' % TOKEN_CHARSET, views.tracking, name='tracking'),
 )
